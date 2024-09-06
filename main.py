@@ -40,8 +40,6 @@ def run_evaluation():
                     }
                 )
 
-        # print(code_list)
-
         code = "\n".join(code_list)
 
         token_count = vertex.count_tokens(code_prompt, code)
