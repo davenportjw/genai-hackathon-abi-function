@@ -43,7 +43,7 @@ def get_files_contents(url: str, minimal: bool = False) -> str:
                 """
                 contents_text.append(content_text)
 
-    return contents_text
+    return "\n".join(contents_text)
 
 
 if __name__ == "__main__":

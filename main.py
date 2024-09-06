@@ -24,14 +24,12 @@ def run_evaluation():
 
         for url in url_list:
             if "github.com" in url:
-                github_urls.append(url)
+                github_urls.append(url.split("github.com/", 1)[1])
 
         code_list = []
         for url in github_urls:
             try:
-                code = github_actions.get_files_contents(url)
-
-                code_list.append(code)
+                code_list.append(github_actions.get_files_contents(url))
             except:
                 return jsonify(
                     {
@@ -42,9 +40,11 @@ def run_evaluation():
                     }
                 )
 
-        code_joined = "\n".join(code_list)
+        # print(code_list)
 
-        token_count = vertex.count_tokens(code_prompt, code_joined)
+        code = "\n".join(code_list)
+
+        token_count = vertex.count_tokens(code_prompt, code)
         print(f"Token count: {token_count}")
 
         if token_count < 2000000:
@@ -52,7 +52,9 @@ def run_evaluation():
         else:
             code = github_actions.get_files_contents(url, True)
 
-        response = vertex.evaluate_code(code_prompt, code_joined)
+        # TODO: if minimal and tokens still >2M, then truncate past 2M and log
+
+        response = vertex.evaluate_code(code_prompt, code)
 
         replies.append(response)
 
