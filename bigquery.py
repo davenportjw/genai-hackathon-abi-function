@@ -1,4 +1,11 @@
 from google.cloud import bigquery
+import os
+
+PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "abis-345004")
+LOCATION = os.getenv("REGION", "us-central1")
+
+client = bigquery.Client(location=LOCATION)
+
 
 def query_bigquery_to_dict(query):
     """Queries BigQuery and returns the results as a list of dictionaries.
@@ -9,9 +16,6 @@ def query_bigquery_to_dict(query):
     Returns:
         A list of dictionaries, where each dictionary represents a row in the result set.
     """
-
-    # Construct a BigQuery client object.
-    client = bigquery.Client()
 
     # Execute the query.
     query_job = client.query(query)
@@ -29,19 +33,17 @@ def query_bigquery_to_dict(query):
 
     return rows
 
-# Example usage:
-if __name__ == "__main__":
-    # Replace with your BigQuery project ID and table ID.
-    project_id = "your-project-id"
-    table_id = "your_dataset.your_table"
 
-    # Example query.
-    query = f"""
-        SELECT *
-        FROM `{project_id}.{table_id}`
-        LIMIT 10
+def get_prompts() -> dict:
+    query = """
+    select prompt_id, prompt
+    from  {PROJECT_ID}.hackathon_grader.prompts 
+    where prompt_id = 'p_github';
     """
 
-    # Execute the query and print the results.
-    results = query_bigquery_to_dict(query)
-    print(results)
+    return query_bigquery_to_dict(query.format(PROJECT_ID=PROJECT_ID))
+
+
+# Example usage:
+if __name__ == "__main__":
+    print(get_prompts())

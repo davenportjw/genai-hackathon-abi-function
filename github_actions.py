@@ -74,7 +74,7 @@ def check_config(config_status: dict) -> bool:
         write_to_gcs(GCS_BUCKET, f"{config_status["repo_name"]}/_config.json", config_status)
         return False
 
-def download_files(config_status: dict) -> None:
+def get_files_contents(config_status: dict) -> None:
     repo = g.get_repo(f"{config_status["repo_name"]}")
 
     contents = repo.get_contents("")
@@ -89,4 +89,4 @@ if __name__ == "__main__":
     config_status = get_latest_status("davenportjw","gen-ai-weekly")
     action = check_config(config_status)
     if action:
-        download_files(config_status)
+        get_files_contents(config_status)

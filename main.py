@@ -1,22 +1,40 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import os
-# import bigquery
-# import github_actions
+import bigquery
+import vertex
+import github_actions
+from datetime import datetime
 
-# Authenticate using an access token
 
 app = Flask(__name__)
 
-# Get latest templates
+# TODO: make this work with BigQuery remote function syntax
+@app.route("/", methods=['POST'])
+def run_evaluation():
 
+    replies = []
+    request_json = request.get_json()
+    calls = request_json['calls']
+    
+    code_prompt = bigquery.get_prompts()[0]['prompt']
 
-@app.route("/")
-def hello_world():
-    """Example Hello World route."""
-    name = os.environ.get("NAME", "World")
-    return f"Hello {name}!"
+    for call in calls:
+        url = call[0]
+        replies.append(url)
 
-    # Get contents and write them to GCS if there are changes to the commit status
+        # Placeholder
+        code = "import vertexai"
+        # try:
+        #     github_actions.get_content(url)
+        # except:
+        #     return jsonify({"code": 403, 'data': {"errorMessage": "Received but not expected that the argument 0 be null"}})
+
+        # Evaluate contents
+        response = vertex.evaluate_code(code_prompt,code)
+
+        replies.append(response)
+
+    return jsonify( { "replies" :  replies } )
 
     # from GCS, pull the contents into the context window for evaluation
 
