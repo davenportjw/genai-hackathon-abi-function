@@ -3,49 +3,62 @@ import os
 import bigquery
 import vertex
 import github_actions
-from datetime import datetime
 
 
 app = Flask(__name__)
 
-# TODO: make this work with BigQuery remote function syntax
-@app.route("/", methods=['POST'])
+
+@app.route("/", methods=["POST"])
 def run_evaluation():
 
     replies = []
     request_json = request.get_json()
-    calls = request_json['calls']
-    
-    code_prompt = bigquery.get_prompts()[0]['prompt']
+    calls = request_json["calls"]
+
+    code_prompt = bigquery.get_prompts()[0]["prompt"]
 
     for call in calls:
-        url = call[0]
+        url_list = call[0].split(",")
 
-        try:
-            code = github_actions.get_files_contents("https://github.com/AbiramiSukumaran/alloydb-pgvector")
-        except:
-            return jsonify({"code": 403, 'data': {"errorMessage": "Received but not expected that the argument 0 be null"}})
+        github_urls = []
 
-        # Check code length
-        token_count = vertex.evaluate_code(code_prompt,code)
+        for url in url_list:
+            if "github.com" in url:
+                github_urls.append(url)
+
+        code_list = []
+        for url in github_urls:
+            try:
+                code = github_actions.get_files_contents(url)
+
+                code_list.append(code)
+            except:
+                return jsonify(
+                    {
+                        "code": 403,
+                        "data": {
+                            "errorMessage": "Received but not expected that the argument 0 be null"
+                        },
+                    }
+                )
+
+        code_joined = "\n".join(code_list)
+
+        token_count = vertex.count_tokens(code_prompt, code_joined)
+        print(f"Token count: {token_count}")
 
         if token_count < 2000000:
             pass
         else:
-            code = github_actions.get_files_contents("https://github.com/AbiramiSukumaran/alloydb-pgvector", True)
-        
-        # Evaluate contents
-        response = vertex.evaluate_code(code_prompt,code)
+            code = github_actions.get_files_contents(url, True)
+
+        response = vertex.evaluate_code(code_prompt, code_joined)
 
         replies.append(response)
 
-    print( { "replies" :  replies } )
-    return jsonify( { "replies" :  replies } )
+    print({"replies": replies})
+    return jsonify({"replies": replies})
 
-    # from GCS, pull the contents into the context window for evaluation
-
-    # parse contents as needed
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))\
-    
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))

@@ -17,10 +17,7 @@ def query_bigquery_to_dict(query):
         A list of dictionaries, where each dictionary represents a row in the result set.
     """
 
-    # Execute the query.
     query_job = client.query(query)
-
-    # Get the results.
     results = query_job.result()
 
     # Convert the results to a list of dictionaries.

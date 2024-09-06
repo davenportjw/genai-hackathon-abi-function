@@ -10,4 +10,11 @@ CREATE OR REPLACE FUNCTION abis-345004.hackathon_grader.remote_add(x INT64, y IN
 REMOTE WITH CONNECTION abis-345004.us-central1.hackathon_grader_functions
 OPTIONS (
   endpoint = 'https://genai-hackathon-abi-function-uxu5wi2jpa-uc.a.run.app'
-)
+);
+
+update hackathon_grader.submission
+set codebase_description = hackathon_grader.grade_code(github_link)
+ where id = '40'
+;
+
+select codebase_description from hackathon_grader.submission where id = '40';
