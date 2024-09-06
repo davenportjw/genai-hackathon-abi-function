@@ -20,20 +20,26 @@ def run_evaluation():
 
     for call in calls:
         url = call[0]
-        replies.append(url)
 
-        # Placeholder
-        code = "import vertexai"
-        # try:
-        #     github_actions.get_content(url)
-        # except:
-        #     return jsonify({"code": 403, 'data': {"errorMessage": "Received but not expected that the argument 0 be null"}})
+        try:
+            code = github_actions.get_files_contents("https://github.com/AbiramiSukumaran/alloydb-pgvector")
+        except:
+            return jsonify({"code": 403, 'data': {"errorMessage": "Received but not expected that the argument 0 be null"}})
 
+        # Check code length
+        token_count = vertex.evaluate_code(code_prompt,code)
+
+        if token_count < 2000000:
+            pass
+        else:
+            code = github_actions.get_files_contents("https://github.com/AbiramiSukumaran/alloydb-pgvector", True)
+        
         # Evaluate contents
         response = vertex.evaluate_code(code_prompt,code)
 
         replies.append(response)
 
+    print( { "replies" :  replies } )
     return jsonify( { "replies" :  replies } )
 
     # from GCS, pull the contents into the context window for evaluation

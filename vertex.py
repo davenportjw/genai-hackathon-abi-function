@@ -9,16 +9,21 @@ MODEL = "gemini-1.5-flash-001" # this is selectable
 
 vertexai.init(project=PROJECT_ID, location=LOCATION)
 
-
-def evaluate_code(prompt: str, code: str) -> dict:
-    model = GenerativeModel(MODEL)
-    generation_config = GenerationConfig() #add in placeholders here, seed value and low temp
-
-    prompt_template = """
+prompt_template = """
     {prompt}
     <Code>
     {code}
     """
+
+def count_tokens(prompt: str, code: str) -> int:
+    model = GenerativeModel(MODEL)
+    response = model.count_tokens(prompt_template.format(prompt=prompt, code=code))
+
+    return response.total_tokens
+
+def evaluate_code(prompt: str, code: str) -> dict:
+    model = GenerativeModel(MODEL)
+    generation_config = GenerationConfig() #add in placeholders here, seed value and low temp
 
     response = model.generate_content(
         prompt_template.format(prompt=prompt, code=code),
@@ -26,3 +31,5 @@ def evaluate_code(prompt: str, code: str) -> dict:
     )
 
     return response.text
+
+
